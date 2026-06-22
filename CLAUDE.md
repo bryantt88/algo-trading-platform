@@ -1,5 +1,13 @@
 # Algorithmic Trading Project — Bryant Effendi
 
+> ▶ **START HERE (every session):** Read [`docs/STATUS.md`](docs/STATUS.md) first — it has the current
+> state, what's done, environment notes, and the next steps. Then follow the rules below.
+>
+> **Snapshot:** Public portfolio repo at https://github.com/bryantt88/algo-trading-platform (branch `main`).
+> Current focus: **full quant + price action** (NLP/sentiment deferred). Framework + dashboard + MCP
+> (GitHub, Alpaca-paper, TradingView) + custom agents/skills are built and verified. Alpaca paper account
+> is live. Next: build the **Donchian breakout** strategy, then **pairs trading**.
+
 ## Project Purpose
 Build a reliable pipeline to develop, backtest, paper trade, and live trade quantitative strategies.
 Priority: accuracy and real-world applicability over speed of deployment.
