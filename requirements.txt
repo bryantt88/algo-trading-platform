@@ -24,10 +24,12 @@ lightgbm>=4.2.0
 transformers>=4.38.0        # FinBERT and other HuggingFace models
 torch>=2.2.0                # Required by transformers
 
-# ── Visualization ─────────────────────────────────────────────────────
+# ── Visualization & Dashboard ─────────────────────────────────────────
 matplotlib>=3.8.0
 plotly>=5.19.0
 kaleido>=0.2.1              # Static image export for plotly
+streamlit>=1.40.0           # Interactive backtest dashboard (dashboard/app.py)
+quantstats>=0.0.62          # Performance tearsheets (Sharpe, drawdown, HTML reports)
 
 # ── Configuration & Environment ───────────────────────────────────────
 pyyaml>=6.0.1

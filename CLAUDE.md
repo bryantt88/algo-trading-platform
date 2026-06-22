@@ -147,6 +147,45 @@ Algoritmic Trading Project/
 
 ---
 
+## Custom Agents & Skills (this project)
+
+**Agents** (`.claude/agents/`) — invoke for specialized analysis:
+| Agent | When to use |
+|-------|-------------|
+| `quant-reviewer` | Before promoting any strategy past Gate 1 — audits for lookahead/survivorship bias, data snooping, missing costs, overfitting. |
+| `strategy-researcher` | Before writing a new strategy — researches academic basis, edge decay, failure modes, proposes a `BaseStrategy`-compatible design. |
+| `backtest-analyst` | After a backtest — skeptical statistical review (sample size, implausible Sharpe, regime dependence) on top of the raw gate check. |
+
+**Skills** (`.claude/skills/`) — invoke for repeatable workflows:
+| Skill | What it does |
+|-------|--------------|
+| `new-strategy` | Scaffolds `strategies/<name>.py` + config + test stub from `BaseStrategy`, registers it in `__init__` and the dashboard. |
+| `run-backtest` | Standard Gate 1 backtest: fetch → engine → `gate1_check` → save report to `reports/`. |
+| `gate-review` | Go/no-go decision against Gate 1/2/3 thresholds (reads `CLAUDE.md` + `configs/`). |
+
+---
+
+## Connected Tools (MCP)
+
+Configured in `.mcp.json` (secrets via env vars, never committed):
+| Server | Use for | Notes |
+|--------|---------|-------|
+| `github` | Repo, issues, PRs, code search | Official remote; OAuth via `/mcp`. This repo is a **public portfolio project**. |
+| `alpaca` | Account, quotes, bars, paper orders | Official; **pinned to paper** (`ALPACA_PAPER_TRADE=true`). Live is a deliberate, separate switch. |
+| `tradingview` | Chart/indicator/Pine analysis | Community (`tradesdontlie`, drives your TradingView Desktop). **Analysis only — NOT a backtest data source.** Registered locally, not committed. |
+
+Backtest data comes from `data/fetcher.py` (yfinance) and Alpaca — never from TradingView scraping.
+
+---
+
+## Dashboard
+
+Interactive Streamlit app at `dashboard/app.py`: `streamlit run dashboard/app.py`.
+Reuses `data/fetcher`, `BacktestEngine`, and `gate1_check` — do not duplicate engine logic there.
+When adding a new strategy, also add it to the `STRATEGIES` dict in `dashboard/app.py`.
+
+---
+
 ## Reference: Prior Experiments
 
 Existing trading code is in a separate directory:
