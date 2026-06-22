@@ -1,0 +1,39 @@
+# Default configuration — shared across all strategies.
+# Override per strategy by creating configs/<strategy_name>.yaml
+# and loading it alongside this file.
+
+backtest:
+  initial_capital: 100_000       # USD
+  commission: 0.001              # 0.1% per side
+  slippage: 0.001                # 0.1% slippage
+  start_date: "2018-01-01"       # use at least 5 years for robust backtests
+  end_date: null                 # null = today
+
+risk:
+  position_method: fixed_fraction
+  max_position_pct: 0.05         # 5% of portfolio per position
+  max_portfolio_drawdown: 0.10   # 10% portfolio drawdown → pause paper/live trading
+  max_daily_loss_pct: 0.03       # 3% daily loss → kill switch (live only)
+  stop_loss_pct: 0.02            # 2% per-trade stop loss
+
+gate1:
+  min_sharpe: 1.0
+  max_drawdown: -0.20
+  min_profit_factor: 1.5
+  min_win_rate: 0.50
+  min_trades: 30
+  min_backtest_days: 252
+
+gate2:
+  min_paper_days: 30
+  live_to_backtest_sharpe_ratio: 0.80  # live Sharpe must be ≥ 80% of backtest Sharpe
+
+data:
+  default_interval: "1d"
+  benchmark: "SPY"
+  use_cache: true
+
+execution:
+  broker: alpaca
+  paper_url: "https://paper-api.alpaca.markets"
+  live_url: "https://api.alpaca.markets"

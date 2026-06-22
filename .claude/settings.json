@@ -1,0 +1,59 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(pip install *)",
+      "Bash(pip list*)",
+      "Bash(pip freeze*)",
+      "Bash(python -m pytest *)",
+      "Bash(python -m pytest)",
+      "Bash(python -m black *)",
+      "Bash(python -m flake8 *)",
+      "Bash(jupyter *)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git add *)",
+      "Bash(git commit*)",
+      "Bash(git init*)",
+      "Bash(.venv\\Scripts\\activate*)",
+      "Bash(dir *)",
+      "Bash(ls *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -Command \"$ti = $env:CLAUDE_TOOL_INPUT | ConvertFrom-Json -ErrorAction SilentlyContinue; $cmd = if ($ti) { $ti.command } else { '' }; if ($cmd -match 'live_trader') { Write-Output 'LIVE_TRADING_WARNING: live_trader.py will execute REAL trades with REAL capital. Confirm the user has explicitly approved this action for this session.'; exit 1 }\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -Command \"$ti = $env:CLAUDE_TOOL_INPUT | ConvertFrom-Json -ErrorAction SilentlyContinue; $cmd = if ($ti) { $ti.command } else { '' }; if ($cmd -match '\\.py$' -or $cmd -match 'python ') { $ec = $env:CLAUDE_TOOL_RESPONSE | ConvertFrom-Json -ErrorAction SilentlyContinue; $out = if ($ec) { $ec.output } else { '' }; if ($out -match 'Traceback|Error:|Exception:') { Write-Output 'PYTHON_ERROR_DETECTED: The script raised an exception. Review the traceback above before proceeding.' } }\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -Command \"Write-Output ''; Write-Output '--- Session end ---'; $base = 'C:\\Users\\Bryant Effendi\\OneDrive - City University of Hong Kong - Student\\Desktop\\Algoritmic Trading Project'; $changed = git -C $base status --short 2>$null; if ($changed) { Write-Output 'Changed files:'; Write-Output $changed } else { Write-Output 'No uncommitted changes.' }\""
+          }
+        ]
+      }
+    ]
+  }
+}

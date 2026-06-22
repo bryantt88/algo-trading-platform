@@ -1,0 +1,51 @@
+# ── Core ─────────────────────────────────────────────────────────────
+pandas>=2.1.0
+numpy>=1.26.0
+scipy>=1.11.0
+
+# ── Market Data ───────────────────────────────────────────────────────
+yfinance>=0.2.40
+alpaca-py>=0.20.0          # Alpaca paper + live trading + data
+
+# ── Technical Analysis ────────────────────────────────────────────────
+pandas-ta>=0.3.14b0        # Pure-Python TA (no C deps) — use this
+# ta-lib                   # Faster but requires C lib; install separately if needed
+
+# ── Backtesting ───────────────────────────────────────────────────────
+vectorbt>=0.26.2            # Fast vectorized backtesting (optional, heavy install)
+pyarrow>=14.0.0             # Parquet support for data cache
+
+# ── Machine Learning ──────────────────────────────────────────────────
+scikit-learn>=1.4.0
+xgboost>=2.0.0
+lightgbm>=4.2.0
+
+# ── NLP / Sentiment ───────────────────────────────────────────────────
+transformers>=4.38.0        # FinBERT and other HuggingFace models
+torch>=2.2.0                # Required by transformers
+
+# ── Visualization ─────────────────────────────────────────────────────
+matplotlib>=3.8.0
+plotly>=5.19.0
+kaleido>=0.2.1              # Static image export for plotly
+
+# ── Configuration & Environment ───────────────────────────────────────
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
+
+# ── Statistical ───────────────────────────────────────────────────────
+statsmodels>=0.14.0         # Cointegration tests, OLS, ARIMA
+
+# ── Utilities ─────────────────────────────────────────────────────────
+requests>=2.31.0
+beautifulsoup4>=4.12.0      # Web scraping for news/sentiment
+tqdm>=4.66.0
+
+# ── Jupyter ───────────────────────────────────────────────────────────
+jupyter>=1.0.0
+ipykernel>=6.29.0
+ipywidgets>=8.1.0
+
+# ── Testing ───────────────────────────────────────────────────────────
+pytest>=8.0.0
+pytest-cov>=4.1.0

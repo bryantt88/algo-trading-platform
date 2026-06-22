@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+
+# Secrets — never commit
+.env
+*.env
+*api_key*
+*secret_key*
+*credentials*.json
+
+# Data cache (regenerable)
+data/cache/
+
+# Logs and live output
+logs/*.log
+logs/*.csv
+
+# Large report artifacts
+reports/*.png
+reports/*.pdf
+reports/*.html
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
