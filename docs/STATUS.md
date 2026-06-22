@@ -11,8 +11,9 @@ _Last updated: 2026-06-22_
 - **Verified**: 12/12 tests pass; engine smoke-tested; Alpaca paper account live ($100k, ACTIVE).
 
 ## ⚙️ Environment notes
-- **Deps**: lean venv `.venv` (no torch/transformers — sentiment deferred). If the dashboard won't
-  import, run `pip install -r requirements.txt` inside the venv.
+- **Deps**: lean venv `.venv` is **fully installed and verified** (12/12 tests pass in-venv; no
+  torch/transformers — sentiment deferred). Just `.venv\Scripts\activate` and go. Key versions:
+  pandas 3.0, numpy 2.2, streamlit 1.58, alpaca-py 0.43, statsmodels 0.14, xgboost 3.3, quantstats 0.0.81.
 - **Alpaca**: keys in `.env` (gitignored) and as Windows user env vars — **restart terminal/VS Code**
   so the Alpaca MCP picks them up.
 - **TradingView MCP**: installed at `C:\Users\Bryant Effendi\mcp-servers\tradingview-mcp`. For live data,
