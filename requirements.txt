@@ -15,14 +15,16 @@ pandas-ta>=0.3.14b0        # Pure-Python TA (no C deps) — use this
 vectorbt>=0.26.2            # Fast vectorized backtesting (optional, heavy install)
 pyarrow>=14.0.0             # Parquet support for data cache
 
-# ── Machine Learning ──────────────────────────────────────────────────
+# ── Machine Learning (quant signal models) ────────────────────────────
 scikit-learn>=1.4.0
 xgboost>=2.0.0
 lightgbm>=4.2.0
 
-# ── NLP / Sentiment ───────────────────────────────────────────────────
-transformers>=4.38.0        # FinBERT and other HuggingFace models
-torch>=2.2.0                # Required by transformers
+# ── NLP / Sentiment (DEFERRED — re-enable when adding a sentiment phase) ─
+# Current focus is full quant + price action, so the heavy NLP stack is
+# left out to keep installs lean. Uncomment to add FinBERT-style sentiment.
+# transformers>=4.38.0      # FinBERT and other HuggingFace models
+# torch>=2.2.0              # Required by transformers
 
 # ── Visualization & Dashboard ─────────────────────────────────────────
 matplotlib>=3.8.0
@@ -40,8 +42,8 @@ statsmodels>=0.14.0         # Cointegration tests, OLS, ARIMA
 
 # ── Utilities ─────────────────────────────────────────────────────────
 requests>=2.31.0
-beautifulsoup4>=4.12.0      # Web scraping for news/sentiment
 tqdm>=4.66.0
+# beautifulsoup4>=4.12.0    # DEFERRED — only needed for news/sentiment scraping
 
 # ── Jupyter ───────────────────────────────────────────────────────────
 jupyter>=1.0.0
