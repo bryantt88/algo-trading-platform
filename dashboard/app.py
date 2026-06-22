@@ -495,7 +495,7 @@ with tab_chart:
     mr_df = pd.DataFrame({"ret": monthly_ret, "year": monthly_ret.index.year, "month": monthly_ret.index.month})
     mr_pivot = mr_df.pivot_table(index="year", columns="month", values="ret")
     mr_pivot.columns = [_MONTHS[c] for c in mr_pivot.columns]
-    mr_text = mr_pivot.applymap(lambda v: f"{v:.1%}" if pd.notna(v) else "")
+    mr_text = mr_pivot.map(lambda v: f"{v:.1%}" if pd.notna(v) else "")
     fig_mh = go.Figure(go.Heatmap(
         z=mr_pivot.values,
         x=list(mr_pivot.columns),
@@ -655,7 +655,7 @@ if mode == "Portfolio":
         _MONTHS = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",
                    7:"Jul",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
         mr_pivot_a.columns = [_MONTHS[c] for c in mr_pivot_a.columns]
-        mr_text_a = mr_pivot_a.applymap(lambda v: f"{v:.1%}" if pd.notna(v) else "")
+        mr_text_a = mr_pivot_a.map(lambda v: f"{v:.1%}" if pd.notna(v) else "")
         # Annual return column
         annual_col = mr_pivot_a.apply(lambda row: (1 + row.dropna()).prod() - 1, axis=1)
 
