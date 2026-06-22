@@ -399,8 +399,8 @@ if mode == "Single Asset":
         "📈  Equity Curve", "🔬  Walk-Forward", "🛡️  Risk", "📋  Trade Log", "🎯  Gate 1",
     ])
 else:
-    tab_chart, tab_per_asset, tab_risk, tab_gate = st.tabs([
-        "📈  Equity Curve", "📊  Per-Asset", "🛡️  Risk", "🎯  Gate 1",
+    tab_chart, tab_per_asset, tab_alloc, tab_risk, tab_gate = st.tabs([
+        "📈  Equity Curve", "📊  Per-Asset", "📅  Allocation", "🛡️  Risk", "🎯  Gate 1",
     ])
 
 # ─────────────────────────────── TAB: Equity Curve ───────────────────────────
@@ -485,6 +485,37 @@ with tab_chart:
     ))
     fig2.update_layout(height=200, **PLOTLY_LAYOUT)
     st.plotly_chart(fig2, use_container_width=True)
+
+    # Monthly returns heatmap (tearsheet-style, both modes)
+    st.markdown("<div class='section-header'>Monthly Returns Heatmap</div>", unsafe_allow_html=True)
+    dr_monthly_src = port["portfolio_returns"] if mode == "Portfolio" else results["strategy_returns"]
+    monthly_ret = dr_monthly_src.resample("ME").apply(lambda x: (1 + x).prod() - 1)
+    _MONTHS = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",
+               7:"Jul",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
+    mr_df = pd.DataFrame({"ret": monthly_ret, "year": monthly_ret.index.year, "month": monthly_ret.index.month})
+    mr_pivot = mr_df.pivot_table(index="year", columns="month", values="ret")
+    mr_pivot.columns = [_MONTHS[c] for c in mr_pivot.columns]
+    mr_text = mr_pivot.applymap(lambda v: f"{v:.1%}" if pd.notna(v) else "")
+    fig_mh = go.Figure(go.Heatmap(
+        z=mr_pivot.values,
+        x=list(mr_pivot.columns),
+        y=[str(y) for y in mr_pivot.index],
+        colorscale=[[0,"#7a2828"],[0.5,"#21262d"],[1,"#0d4f3c"]],
+        zmid=0,
+        text=mr_text.values,
+        texttemplate="%{text}",
+        hovertemplate="<b>%{y} %{x}</b><br>Return: %{z:.2%}<extra></extra>",
+        showscale=True,
+        colorbar=dict(title="%", thickness=10, tickformat=".0%"),
+    ))
+    fig_mh.update_layout(
+        height=max(220, len(mr_pivot) * 32 + 60),
+        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#0d1117",
+        font=dict(family="Inter", color=FG_DIM, size=11),
+        margin=dict(l=50, r=40, t=20, b=20),
+        hoverlabel=dict(bgcolor=BG_CARD, bordercolor="#30363d", font_size=12, font_family="Inter"),
+    )
+    st.plotly_chart(fig_mh, use_container_width=True)
 
 # ─────────────────────────────── TAB: Walk-Forward (Single only) ─────────────
 if mode == "Single Asset":
@@ -597,13 +628,170 @@ if mode == "Portfolio":
                 colorbar=dict(title="ρ", thickness=12),
             ))
             n = len(corr)
+            _corr_layout = {k: v for k, v in PLOTLY_LAYOUT.items() if k != "margin"}
             fig_corr.update_layout(
                 height=max(280, n * 50),
-                **PLOTLY_LAYOUT,
+                **_corr_layout,
                 margin=dict(l=60, r=40, t=20, b=60),
             )
             st.plotly_chart(fig_corr, use_container_width=True)
             st.caption("Low / negative correlations → better diversification. Target: no pair above 0.6 (per risk rules).")
+
+# ─────────────────────────────── TAB: Allocation (Portfolio only) ─────────────
+if mode == "Portfolio":
+    with tab_alloc:
+        # ── 1. Monthly returns heatmap (portfolio-level) ──────────────────────
+        st.markdown("<div class='section-header'>Portfolio Monthly Returns</div>", unsafe_allow_html=True)
+        st.caption("Each cell is the portfolio's compounded return for that month.")
+        # (reuse the pivot already computed in the equity curve tab)
+        dr_alloc = port["portfolio_returns"]
+        monthly_ret_a = dr_alloc.resample("ME").apply(lambda x: (1 + x).prod() - 1)
+        mr_df_a = pd.DataFrame({
+            "ret":   monthly_ret_a,
+            "year":  monthly_ret_a.index.year,
+            "month": monthly_ret_a.index.month,
+        })
+        mr_pivot_a = mr_df_a.pivot_table(index="year", columns="month", values="ret")
+        _MONTHS = {1:"Jan",2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",
+                   7:"Jul",8:"Aug",9:"Sep",10:"Oct",11:"Nov",12:"Dec"}
+        mr_pivot_a.columns = [_MONTHS[c] for c in mr_pivot_a.columns]
+        mr_text_a = mr_pivot_a.applymap(lambda v: f"{v:.1%}" if pd.notna(v) else "")
+        # Annual return column
+        annual_col = mr_pivot_a.apply(lambda row: (1 + row.dropna()).prod() - 1, axis=1)
+
+        fig_mh2 = go.Figure(go.Heatmap(
+            z=mr_pivot_a.values,
+            x=list(mr_pivot_a.columns),
+            y=[str(y) for y in mr_pivot_a.index],
+            colorscale=[[0,"#7a2828"],[0.5,"#21262d"],[1,"#0d4f3c"]],
+            zmid=0,
+            text=mr_text_a.values,
+            texttemplate="%{text}",
+            hovertemplate="<b>%{y} %{x}</b><br>Return: %{z:.2%}<extra></extra>",
+            showscale=True,
+            colorbar=dict(title="%", thickness=10, tickformat=".0%"),
+        ))
+        fig_mh2.update_layout(
+            height=max(220, len(mr_pivot_a) * 32 + 60),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#0d1117",
+            font=dict(family="Inter", color=FG_DIM, size=11),
+            margin=dict(l=50, r=40, t=20, b=20),
+            hoverlabel=dict(bgcolor=BG_CARD, bordercolor="#30363d", font_size=12, font_family="Inter"),
+        )
+        st.plotly_chart(fig_mh2, use_container_width=True)
+
+        # Annual summary row
+        ann_cols = st.columns(min(len(annual_col), 8))
+        for i, (yr, ret) in enumerate(annual_col.items()):
+            clr = GREEN if ret >= 0 else RED
+            ann_cols[i % len(ann_cols)].markdown(
+                f"<div style='background:{BG_CARD};border:1px solid #30363d;border-radius:8px;"
+                f"padding:10px 14px;text-align:center;'>"
+                f"<div style='font-size:11px;color:{FG_DIM};font-weight:600;'>{yr}</div>"
+                f"<div style='font-size:18px;font-weight:700;color:{clr};'>{ret:.1%}</div>"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
+
+        # ── 2. Signal / position heatmap ──────────────────────────────────────
+        st.markdown("<div class='section-header'>Signal Timeline — When Each Asset Was Held</div>", unsafe_allow_html=True)
+        st.caption("Monthly average signal: 🟢 Long (+1)  ·  ⬜ Flat (0)  ·  🔴 Short (−1)")
+
+        pos_monthly = {}
+        for ticker, res in port["per_asset"].items():
+            pos_monthly[ticker] = res["position"].resample("ME").mean()
+
+        pos_df = pd.DataFrame(pos_monthly).T
+        pos_df.columns = pos_df.columns.strftime("%Y-%m")
+
+        # Show last 48 months max to keep it readable
+        if pos_df.shape[1] > 48:
+            pos_df = pos_df.iloc[:, -48:]
+
+        fig_sig = go.Figure(go.Heatmap(
+            z=pos_df.values,
+            x=list(pos_df.columns),
+            y=list(pos_df.index),
+            colorscale=[[0,"#7a2828"],[0.5,"#30363d"],[1,"#1a7a5e"]],
+            zmin=-1, zmax=1, zmid=0,
+            text=np.round(pos_df.values, 1),
+            texttemplate="%{text}",
+            hovertemplate="<b>%{y}</b>  %{x}<br>Avg signal: %{z:.2f}<extra></extra>",
+            showscale=True,
+            colorbar=dict(title="Signal", thickness=10,
+                          tickvals=[-1, 0, 1], ticktext=["Short","Flat","Long"]),
+        ))
+        n_assets = len(pos_df)
+        fig_sig.update_layout(
+            height=max(200, n_assets * 40 + 60),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#0d1117",
+            font=dict(family="Inter", color=FG_DIM, size=11),
+            xaxis=dict(gridcolor=BG_GRID, tickangle=-45),
+            yaxis=dict(gridcolor=BG_GRID),
+            margin=dict(l=80, r=40, t=20, b=60),
+            hoverlabel=dict(bgcolor=BG_CARD, bordercolor="#30363d", font_size=12, font_family="Inter"),
+        )
+        st.plotly_chart(fig_sig, use_container_width=True)
+
+        # ── 3. Return attribution ─────────────────────────────────────────────
+        st.markdown("<div class='section-header'>Return Attribution (Annualised Contribution)</div>", unsafe_allow_html=True)
+        st.caption("Each asset's annualised return × equal weight. Bars show who drove portfolio performance.")
+
+        n_assets_in_port = len(port["per_asset"])
+        attribution = {}
+        for ticker, res in port["per_asset"].items():
+            am = res["metrics"]
+            attribution[ticker] = am["annual_return"] / n_assets_in_port
+
+        attr_s    = pd.Series(attribution).sort_values()
+        bar_clrs  = [GREEN if v >= 0 else RED for v in attr_s.values]
+        fig_attr  = go.Figure(go.Bar(
+            x=attr_s.values,
+            y=attr_s.index,
+            orientation="h",
+            marker_color=bar_clrs,
+            opacity=0.85,
+            text=[f"{v:.1%}" for v in attr_s.values],
+            textposition="outside",
+            hovertemplate="<b>%{y}</b><br>Contribution: %{x:.2%}<extra></extra>",
+        ))
+        fig_attr.add_vline(x=0, line_color=FG_DIM, line_width=1)
+        fig_attr.update_layout(
+            height=max(200, n_assets_in_port * 36 + 60),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#0d1117",
+            font=dict(family="Inter", color=FG_DIM, size=11),
+            xaxis=dict(gridcolor=BG_GRID, zeroline=False, tickformat=".1%"),
+            yaxis=dict(gridcolor=BG_GRID),
+            margin=dict(l=10, r=60, t=10, b=20),
+            hoverlabel=dict(bgcolor=BG_CARD, bordercolor="#30363d", font_size=12, font_family="Inter"),
+            showlegend=False,
+        )
+        st.plotly_chart(fig_attr, use_container_width=True)
+
+        # ── 4. Monthly exposure ───────────────────────────────────────────────
+        st.markdown("<div class='section-header'>Monthly Market Exposure (% of Assets Long)</div>", unsafe_allow_html=True)
+        st.caption("How many assets had an active long signal each month. 100% = fully invested.")
+
+        long_frac = (pd.DataFrame(pos_monthly) > 0.5).mean(axis=1).resample("ME").mean() * 100
+        fig_exp = go.Figure(go.Bar(
+            x=long_frac.index,
+            y=long_frac.values,
+            marker_color=ACCENT, opacity=0.7,
+            hovertemplate="%{x|%Y-%m}<br>%{y:.0f}% of assets long<extra></extra>",
+        ))
+        fig_exp.add_hline(y=50, line_dash="dash", line_color=YELLOW, opacity=.5,
+                          annotation_text="50% neutral", annotation_position="top right")
+        fig_exp.update_layout(
+            height=220,
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="#0d1117",
+            font=dict(family="Inter", color=FG_DIM, size=11),
+            xaxis=dict(gridcolor=BG_GRID, zeroline=False),
+            yaxis=dict(gridcolor=BG_GRID, ticksuffix="%", range=[0, 105]),
+            margin=dict(l=0, r=0, t=10, b=0),
+            hoverlabel=dict(bgcolor=BG_CARD, bordercolor="#30363d", font_size=12, font_family="Inter"),
+            showlegend=False,
+        )
+        st.plotly_chart(fig_exp, use_container_width=True)
 
 # ─────────────────────────────── TAB: Risk ────────────────────────────────────
 with tab_risk:
